@@ -3,10 +3,10 @@ from dataclasses import dataclass, field
 
 from bs4 import BeautifulSoup
 
-from Savers import SaverText
-from Reader import ReaderContent
+from savers import SaverText
+from reader import ReaderContent
 
-site_url = "https://servak.com.ua/"
+SITE_URL = "https://servak.com.ua/"
 
 @dataclass
 class Parser:
@@ -21,14 +21,6 @@ class Parser:
         self.__content = mainpage.get_from_file()
 
         soup = BeautifulSoup(self.__content, 'html.parser')
-        # Парсинг категорий L1 содержащих вложенные
-        #for element in soup.find_all("a", attrs = {"class": self.identity_category}):
-        #for element in soup.find_all("a", class_=self.identity_category):
-        #for element in soup.css.select(self.identity_category):
-        #    print(element.text)
-        #    print(element['href'])
-        #categories_l1 = [{'name_l1':element.text.strip(), 'url':element['href'], 'sub_l2':[]} for element in soup.find_all("a", attrs = {"class": self.identity_category})]
-        #print(categories_l1)
 
         categories_ul = soup.find_all("ul", id=self.identity_category)
         categories = categories_ul[0].find_all("a")
@@ -50,14 +42,18 @@ class Parser:
         self.identity_image = id_image
         self.identity_properties = id_properties
 
+        productpage = ReaderContent(None)
+        # self.__content = productpage.get_from_url()
+        self.__content = productpage.get_from_file()
+
 
 # Для уменьшения кол-ва запросов , делаем сохранение в file, затем вычитываем в переменную content для парсинга
 # mainpage = ReaderContent(site_url)
 # tofile = SaverText('site_index.html', mainpage.get_from_url())
 # tofile.save_to_file()
-site_url = 'site_index.html'
+SITE_URL = 'site_index.html'
 
 # Выборка категорий товаров с главной страницы
 site_pars = Parser()
-site_pars.get_categories(site_url, id_category='menu-list', id_category_l1='with-child')
+site_pars.get_categories(SITE_URL, id_category='menu-list', id_category_l1='with-child')
 site_pars.get_products(id_product='product-thumb', id_image='image', id_properties='caption')

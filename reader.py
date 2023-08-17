@@ -12,10 +12,10 @@ class ReaderContent:
     encoding: str = 'utf8'
 
     def get_from_url(self):
-        r = requests.get(self.base_url, verify=False)
-        return r.text
+        reader = requests.get(self.base_url, verify=False, timeout=10)
+        return reader.text
 
     def get_from_file(self):
         with open(self.base_url, mode=self.mode, encoding=self.encoding) as file_obj:
-            r = file_obj.read()
-            return r
+            reader = file_obj.read()
+            return reader
