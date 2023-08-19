@@ -1,5 +1,7 @@
 
 from dataclasses import dataclass, field
+import re
+import time
 
 from bs4 import BeautifulSoup
 
@@ -28,7 +30,7 @@ class Parser:
         for category in categories:
             try:
                 if self.identity_category_l1 in category['class']:
-                    self.parser_result.append({'name_l1':category.text.strip(), 'url':category['href'], 'sub_l2':[]})
+                    self.parser_result.append({'name_l1': category.text.strip(), 'url': category['href'], 'sub_l2': []})
                     i += 1
                 else:
                     self.parser_result[i]['sub_l2'].append({'name_l2': category.text.strip(), 'url': category['href']})
@@ -37,14 +39,54 @@ class Parser:
                 i += 1
         print(self.parser_result)
 
+    def get_some_product(self, url: str):
+        productpage = ReaderContent(url)
+        self.__content = productpage.get_from_url()
+        # self.__content = productpage.get_from_file()
+        soup = BeautifulSoup(self.__content, 'html.parser')
+        product_div = soup.find_all("div", class_=self.identity_product)
+        list_of_products = list()
+        for product in product_div:
+            image = product.find("img", class_=self.identity_image)
+            urlsrc = image['src']
+            caption = product.find("div", class_=self.identity_properties)
+            producturl = caption.a['href']
+            productname = caption.a.text
+            if caption.find("p", class_='price'):
+                price = caption.find("p", class_='price').text
+            else:
+                price = "нет в наличии"
+            if caption.find("p", class_='description'):
+                short_description = caption.find("p", class_='description').text
+            else:
+                short_description = "..."
+            list_properties = [prop.text for prop in caption.find_all("div", re.compile("option"))]
+
+            list_of_products.append({'name_el': productname,
+                    'description': short_description,
+                    'price': price.strip(),
+                    'image': urlsrc,
+                    'url': producturl,
+                    'properties': list_properties})
+            time.sleep(60)
+
+        return list_of_products
+
     def get_products(self, id_product: str = None, id_image: str = None, id_properties: str = None):
         self.identity_product = id_product
         self.identity_image = id_image
         self.identity_properties = id_properties
 
-        productpage = ReaderContent(None)
-        # self.__content = productpage.get_from_url()
-        self.__content = productpage.get_from_file()
+        for element in self.parser_result:
+            if 'sub_l2' in element:
+                for sub_l2_element in element['sub_l2']:
+                    sub_l2_element['elements'] = self.get_some_product(sub_l2_element['url'])
+                    time.sleep(180)
+            else:
+                element['elements'] = self.get_some_product(element['url'])
+                time.sleep(180)
+            break
+        print(self.parser_result)
 
 
 # Для уменьшения кол-ва запросов , делаем сохранение в file, затем вычитываем в переменную content для парсинга
@@ -56,4 +98,4 @@ SITE_URL = 'site_index.html'
 # Выборка категорий товаров с главной страницы
 site_pars = Parser()
 site_pars.get_categories(SITE_URL, id_category='menu-list', id_category_l1='with-child')
-site_pars.get_products(id_product='product-thumb', id_image='image', id_properties='caption')
+site_pars.get_products(id_product='product-thumb', id_image='img-responsive', id_properties='caption')
