@@ -9,7 +9,7 @@ import savers
 from reader import ReaderContent
 
 SITE_URL = "https://servak.com.ua/"
-DUMP_FILE = "data/servak_com_ua.json"
+DUMP_FILE = "../data/servak_com_ua.json"
 
 
 @dataclass
