@@ -7,4 +7,4 @@ format:
 req:
 		pip freeze > requirements.txt
 test:
-		coverage -m pytest
+		coverage run -m pytest
