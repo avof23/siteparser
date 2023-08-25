@@ -5,11 +5,12 @@ import urllib3
 
 urllib3.disable_warnings()
 
+
 @dataclass
 class ReaderContent:
     base_url: str
-    mode: str = 'r'
-    encoding: str = 'utf8'
+    mode: str = "r"
+    encoding: str = "utf8"
 
     def get_from_url(self):
         reader = requests.get(self.base_url, verify=False, timeout=10)
